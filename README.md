@@ -79,3 +79,12 @@ Show devices contains keyword (e.g. `iOS 10`)
 ## Notice
 
 kikanbo is depends on macOS commands `instruments`. Please run on macOS.
+
+
+## Development
+
+```
+$ go get -u github.com/Nonchalant/kikanbo
+$ cd ~/.go/github.com/Nonchalant/kikanbo
+$ go run main.go run
+```

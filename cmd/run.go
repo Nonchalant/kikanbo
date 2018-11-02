@@ -95,32 +95,52 @@ func run(api *slack.Client, memberID string, fileDir string, filePath string) in
 					connectedDevices := connectedDevices()
 					disconnectedDevices := disconnectedDevices(filePath, connectedDevices)
 
+					connected := slack.Attachment{}
+					disconnected := slack.Attachment{}
+
 					params := slack.PostMessageParameters{
 						Username:  "kikanbo",
 						IconEmoji: ":ramen:",
 					}
+
 					if len(attachmentFields(connectedDevices, keyword)) != 0 {
-						connected := slack.Attachment{
+						connected = slack.Attachment{
 							AuthorName:    "Connected",
 							AuthorSubname: ":bulb:",
 							Color:         "#7CD197",
 							Fields:        attachmentFields(connectedDevices, keyword),
 						}
-						params.Attachments = append(params.Attachments, connected)
+
+						post(
+							api,
+							ev.Channel,
+							slack.MsgOptionCompose(
+								slack.MsgOptionText(" ", false),
+								slack.MsgOptionPostMessageParameters(params),
+								slack.MsgOptionAttachments(connected),
+							),
+						)
 					}
+
 					if len(attachmentFields(disconnectedDevices, keyword)) != 0 {
-						disconnected := slack.Attachment{
+						disconnected = slack.Attachment{
 							AuthorName:    "Disconnected",
 							AuthorSubname: ":electric_plug:",
 							Color:         "#F35A00",
 							Fields:        attachmentFields(disconnectedDevices, keyword),
 						}
-						params.Attachments = append(params.Attachments, disconnected)
+
+						post(
+							api,
+							ev.Channel,
+							slack.MsgOptionCompose(
+								slack.MsgOptionText(" ", false),
+								slack.MsgOptionPostMessageParameters(params),
+								slack.MsgOptionAttachments(disconnected),
+							),
+						)
 					}
-					_, _, err := api.PostMessage(ev.Channel, "", params)
-					if err != nil {
-						fmt.Printf("%s\n", err)
-					}
+
 					postProcessing(filePath, append(connectedDevices, disconnectedDevices...))
 				}
 			case *slack.PresenceChangeEvent:
@@ -227,6 +247,14 @@ func attachmentFields(devices []Device, keyword string) []slack.AttachmentField 
 		}
 	}
 	return fields
+}
+
+func post(api *slack.Client, channelID string, options slack.MsgOption) {
+	_, _, err := api.PostMessage(channelID, options)
+
+	if err != nil {
+		fmt.Printf("%s\n", err)
+	}
 }
 
 func postProcessing(filePath string, devices []Device) {
