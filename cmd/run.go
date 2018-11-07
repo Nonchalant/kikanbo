@@ -186,7 +186,7 @@ func connectedDevices() []Device {
 		fmt.Println("Command Exec Error:", err)
 	}
 
-	r := regexp.MustCompile(`(..*)\s\((..*)\)\s\[(\w+)\]`)
+	r := regexp.MustCompile(`(..*)\s\((..*)\)\s\[([\w|-]+)\]`)
 	devices := make([]Device, 0)
 
 	for _, x := range strings.Split(string(out), "\n") {
